@@ -41,7 +41,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Front-end build
+          name: Front-end Build
           command: |
             cd frontend
             npm install 
@@ -58,7 +58,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end build
+          name: Back-end Build
           command: |
             cd backend
             npm install
@@ -75,7 +75,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: Front-end test
+          name: Front-end Test
           command: |
             cd frontend
             npm install 
@@ -89,27 +89,39 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end test
+          name: Back-end Test
           command: |
             cd backend
             npm install
             npm test
             
-#   scan-frontend:
-#     docker:
-#       # Docker image here
-#     steps:
-#       # Checkout code from git
-#       # Restore from cache
-#       # Your job code here
+  scan-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Front-end Scan
+          command: |
+            cd frontend
+            npm install 
+            npm audit --audit-level=critical
 
-#   scan-backend:
-#     docker:
-#       # Docker image here
-#     steps:
-#       # Checkout code from git
-#       # Restore from cache
-#       # Your job code here
+  scan-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end Scan
+          command: |
+            cd backend
+            npm install
+            npm audit --audit-level=critical
 
 #   deploy-infrastructure:
 #     docker:
@@ -286,10 +298,10 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-      # - scan-backend:
-      #     requires: [build-backend]
-      # - scan-frontend:
-      #     requires: [build-frontend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       # - deploy-infrastructure:
       #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       #     filters:
