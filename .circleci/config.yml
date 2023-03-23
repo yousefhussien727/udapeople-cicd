@@ -28,7 +28,7 @@ commands:
       - run:
           name: Install node.js
           command: |
-            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
             sudo apt install -y nodejs
 
             sudo npm install --global n
@@ -204,7 +204,6 @@ jobs:
   configure-infrastructure:
     docker:
       - image: cimg/base:stable
-      # - image: python:3.7-alpine3.11
     steps:
       - checkout
       - install_ansible
@@ -212,12 +211,6 @@ jobs:
           fingerprints: ["3e:8e:b0:de:e2:13:a9:72:f7:33:d3:43:01:e8:7d:e9"]
       - attach_workspace:
           at: ~/
-
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       apk add --update ansible
-
       - run:
           name: Configure server
           command: |
