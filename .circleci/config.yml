@@ -1,6 +1,17 @@
 version: 2.1
 
 commands:
+  install_ansible:
+    description: Install Ansible
+    steps:
+      - run:
+          name: Install Ansible
+          command: |
+            sudo apt update
+            sudo apt install software-properties-common -y
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible -y
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -170,10 +181,11 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: cimg/base:stable
+      # - image: python:3.7-alpine3.11
     steps:
       - checkout
-      # - run: yum install -y tar gzip
+      - install_ansible
       - add_ssh_keys:
           fingerprints: ["3e:8e:b0:de:e2:13:a9:72:f7:33:d3:43:01:e8:7d:e9"]
       - attach_workspace:
