@@ -235,12 +235,13 @@ jobs:
       - install_awscli
       - install_nodejs
       - restore_cache:
-          keys: [backend-deps]
+          keys: [backend-build]
       - run:
           name: Run migrations
           command: |
             cd backend
             npm install
+            npm audit fix --audit-level=critical
             npm run migrations > migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
@@ -260,23 +261,31 @@ jobs:
       - install_awscli
       - install_nodejs
       - restore_cache:
-          keys: [frontend-deps]
+          keys: [frontend-build]
       - run:
           name: Install dependencies
           command: |
             cd frontend
             npm install
+            npm audit fix --audit-level=critical
       - run:
           name: Get backend url
           command: |
-            # your code here
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+
+            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
+            cat frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure
+            cd frontend
+            npm run build
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - destroy-environment
+      - revert-migrations
 
 #   deploy-backend:
 #     docker:
@@ -374,8 +383,8 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
+      - deploy-frontend:
+          requires: [run-migrations]
       # - deploy-backend:
       #     requires: [run-migrations]
       # - smoke-test:
