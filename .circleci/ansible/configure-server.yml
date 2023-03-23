@@ -23,7 +23,7 @@
       raw: test -e /usr/bin/python3 || (apt -у update && apt install -у python3)
       changed_when: false
     
-    - setup:
+    # - setup:
 
   # # Get the environment variables from CircleCI and add to the EC2 instance
   # environment:
