@@ -235,11 +235,11 @@ jobs:
           command: |
             cd backend
 
-            rm -rf node_modules
-            npm cache clean --force
-            npm install
-            npm update
+            # rm -rf node_modules
+            # npm cache clean --force
+            # npm update
 
+            npm install
             npm run migrations > migrations_dump.txt
             cat migrations_dump.txt
       - run:
